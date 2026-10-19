@@ -140,12 +140,12 @@
   "tipo": "saletta",
   "icona": "🔑",
   "zona": "Roma Tiburtina",
-  "lat": 41.8969179,
-  "lon": 12.5395375,
+  "lat": 41.9577917,
+  "lon": 12.5086435,
   "sale": [
    "Smistamento 303"
   ],
-  "osm": "https://www.openstreetmap.org/node/12797722215"
+  "osm": "https://www.openstreetmap.org/node/10039853780"
  },
  {
   "id": "tiburtina",
