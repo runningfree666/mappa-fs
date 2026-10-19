@@ -59,6 +59,8 @@
   .btn { flex: 1; text-align: center; text-decoration: none; border-radius: 10px; padding: 11px 8px;
     background: var(--card); color: var(--fg); font-weight: 600; border: 0; font: inherit; cursor: pointer; }
   .btn.primary { background: var(--accent); color: var(--accent-fg); }
+  .codici { font: 600 17px/1.6 ui-monospace, Menlo, Consolas, monospace; background: var(--card);
+    border-radius: 10px; padding: 8px 12px; margin-top: 8px; user-select: all; }
   .credit { color: var(--muted); font-size: 12px; margin-top: 10px; }
   .credit a { color: inherit; }
   ul.near { list-style: none; margin: 6px 0 0; padding: 0; }
@@ -85,7 +87,12 @@
 const tg = window.Telegram && Telegram.WebApp;
 if (tg && tg.initData !== undefined) { tg.ready(); tg.expand(); }
 const TIPI = {saletta: "🔑 Salette", ristorante: "🍽️ Ristoranti", extra: "⭐ Altri locali"};
-const BOT = new URLSearchParams(location.search).get("bot") || "lavorontn_bot";
+const QS = new URLSearchParams(location.search);
+const BOT = QS.get("bot") || "lavorontn_bot";
+// codici salette: arrivano solo dal link del bot (il sito pubblico non li contiene)
+let CODICI = {};
+try { const b = QS.get("c").replace(/-/g, "+").replace(/_/g, "/");
+  CODICI = JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(b), c => c.charCodeAt(0)))); } catch (e) {}
 const attivi = new Set(Object.keys(TIPI));
 let zona = "", posti = [], markers = [], me = null;
 
@@ -110,9 +117,11 @@ function vaiLink(url, telegram) {
 function scheda(p) {
   let corpo, bottoni;
   if (p.tipo === "saletta") {
-    corpo = `<div class="note">🔑 ${p.sale.map(esc).join(" · ")}</div>
-      <div class="credit">I codici sono visibili solo nel bot (utenti autorizzati).</div>`;
-    bottoni = `<button class="btn primary" id="b-bot">🔑 Codici nel bot</button>`;
+    const righe = CODICI[p.id];
+    corpo = righe && righe.length
+      ? `<div class="codici">${righe.map(esc).join("<br>")}</div>`
+      : `<div class="note">🔑 ${p.sale.map(esc).join(" · ")}</div><div class="credit">Codici visibili aprendo la mappa dal bot.</div>`;
+    bottoni = righe && righe.length ? "" : `<button class="btn primary" id="b-bot">🔑 Codici nel bot</button>`;
   } else {
     corpo = `<div class="meta">📍 ${esc(p.indirizzo)}</div>` +
       (p.tipo === "extra" ? `<div class="note">Locale non nella lista convenzionata${p.categoria ? " · " + esc(p.categoria) : ""}.</div>` : "");
